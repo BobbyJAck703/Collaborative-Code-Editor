@@ -1,18 +1,28 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { createUserTable } = require('./models/userModel');
+const pool = require('./config/db');
+
+
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 1000;
 
 // Middleware
 app.use(bodyParser.json());
 
-// Basic route
-app.get('/', (req, res) => {
-    res.send('Collaborative Code Editor Backend is Running!');
-});
+createUserTable();
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});
+app.get('/', (req, res) => res.send('Backend is running'));
+
+app.listen(port, () => console.log(`Server is running on port ${port}`));
+
+app.get('/users', async (req, res) => {
+    try {
+      const { rows } = await pool.query('SELECT * FROM users');
+      res.json(rows);
+    } catch (err) {
+      console.error('Database query error:', err);
+      res.status(500).send('Server Error');
+    }
+  });
